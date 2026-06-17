@@ -18,7 +18,7 @@ create table if not exists public.jobs (
   salary_max      integer,  -- in thousands: 150 = $150k
   salary_currency text default 'USD',
   company_size    text,
-  status          text,                  -- pending | rejected | interviewing | offer | dropped | oa
+  status          text,                  -- rejected | ghosted | pending | interviewing | offer | dropped | oa
   oa_status       text default 'none',   -- none | pending | submitted | dropped
   interviews      integer default 0,
   extra_info      text,     -- comma-joined: Cover letter | Why us | Project/Technical | About me | Follow-up email | Other

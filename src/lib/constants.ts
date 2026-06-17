@@ -60,6 +60,7 @@ export function locationLabel(value: string): string {
 // tracks the OA/HireVue stage.
 export const STATUSES = [
   "rejected",
+  "ghosted",
   "pending",
   "interviewing",
   "offer",
@@ -71,6 +72,7 @@ export type AppStatus = (typeof STATUSES)[number];
 
 export const STATUS_LABELS: Record<AppStatus, string> = {
   rejected: "Rejected",
+  ghosted: "Ghosted",
   pending: "Pending",
   interviewing: "Interviewing",
   offer: "Offer",
@@ -80,6 +82,7 @@ export const STATUS_LABELS: Record<AppStatus, string> = {
 
 export const STATUS_COLORS: Record<string, string> = {
   rejected: "#c58a92", // dull rose
+  ghosted: "#9a8f86", // dull taupe
   pending: "#bfae74", // dull gold
   interviewing: "#7e9bc0", // dull blue
   offer: "#7fa888", // dull green

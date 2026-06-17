@@ -17,6 +17,7 @@ export interface Job {
   oa_status: OaStatus;
   status:
     | "rejected"
+    | "ghosted"
     | "pending"
     | "interviewing"
     | "offer"

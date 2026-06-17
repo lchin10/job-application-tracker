@@ -181,7 +181,7 @@ function parseOa(str) {
 }
 
 const STATUS_SET = new Set([
-  "rejected", "pending", "interviewing", "offer", "dropped", "oa",
+  "rejected", "ghosted", "pending", "interviewing", "offer", "dropped", "oa",
 ]);
 function parseStatus(str) {
   const v = (str ?? "").trim().toLowerCase();

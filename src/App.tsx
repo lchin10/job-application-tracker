@@ -157,7 +157,7 @@ function Tracker({ session }: { session: Session }) {
     let interviewedJobs = 0;
     let totalInterviews = 0;
     for (const j of jobs) {
-      if (j.status === "rejected") rejected++;
+      if (j.status === "rejected" || j.status === "ghosted") rejected++;
       if (j.oa_status === "submitted") oaCompleted++;
       if (j.interviews > 0) interviewedJobs++;
       totalInterviews += j.interviews ?? 0;
@@ -226,7 +226,7 @@ function Tracker({ session }: { session: Session }) {
           <div className="stat-divider" />
           <div className="stat-card">
             <span className="stat-num">{stats.rejected}</span>
-            <span className="stat-label">Rejected</span>
+            <span className="stat-label">Rejected / Ghosted</span>
           </div>
           <div className="stat-card">
             <span className="stat-num">{stats.oaCompleted}</span>
