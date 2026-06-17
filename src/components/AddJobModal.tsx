@@ -67,6 +67,8 @@ export default function AddJobModal({ open, onClose, onCreated }: Props) {
       setPasteText("");
       setError(null);
       setParseMsg(null);
+      setBusy(false);
+      setParsing(false);
     }
   }, [open]);
 
