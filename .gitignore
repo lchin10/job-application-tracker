@@ -32,5 +32,7 @@ pnpm-debug.log*
 supabase/.temp
 supabase/.branches
 
+.claude
+
 # my notion csv file
 from_notion.csv
