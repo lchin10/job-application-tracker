@@ -360,6 +360,84 @@ select:focus {
   background: color-mix(in srgb, var(--accent) 16%, var(--surface));
 }
 
+/* ---- Pin toggle ---- */
+.jobs-table th.pin-col,
+.jobs-table td.pin-cell {
+  width: 1%;
+  padding-left: 10px;
+  padding-right: 0;
+}
+
+.pin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px;
+  border: none;
+  border-radius: 6px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  /* Hidden until hover so unpinned rows stay uncluttered. */
+  opacity: 0;
+  transition: opacity 0.12s ease, color 0.12s ease;
+}
+
+.job-row:hover .pin-btn,
+.pin-btn:focus-visible {
+  opacity: 0.7;
+}
+
+.pin-btn:hover {
+  opacity: 1;
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+/* A pinned row's button always shows, in the accent color. */
+.pin-btn.is-pinned,
+.job-row:hover .pin-btn.is-pinned {
+  opacity: 1;
+  color: var(--accent);
+}
+
+.job-row.is-pinned {
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+}
+
+.job-row.is-pinned:hover {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+}
+
+.job-row.is-pinned.is-active {
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+}
+
+/* Pinned rows float directly under the sticky header, stacked in order.
+   Sticky goes on the cells, not the <tr> — Safari ignores it on rows. The
+   offset (--sticky-top) is measured in JobsTable, since row heights vary. */
+.job-row.is-sticky > td {
+  position: sticky;
+  top: var(--sticky-top, 0px);
+  z-index: 4; /* under the header (5), over normal rows */
+  /* The <tr> background scrolls away with the row box, so paint the cells. */
+  background: color-mix(in srgb, var(--accent) 7%, var(--surface));
+  transition: background 0.12s ease;
+}
+
+.job-row.is-sticky:hover > td {
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+}
+
+.job-row.is-sticky.is-active > td {
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface));
+}
+
+/* Borders can drop out on sticky cells; use an inset instead. */
+.job-row.is-sticky > td {
+  box-shadow: inset 0 -1px 0 var(--line);
+}
+
 /* ---- Colored chips (locations, extra info, dropdown options) ---- */
 .extra-cell {
   white-space: normal;

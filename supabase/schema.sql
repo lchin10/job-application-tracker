@@ -21,6 +21,7 @@ create table if not exists public.jobs (
   status          text,                  -- rejected | ghosted | pending | interviewing | offer | dropped | oa
   oa_status       text default 'none',   -- none | pending | submitted | dropped
   interviews      integer default 0,
+  pinned          boolean not null default false,  -- sticks the row to the top of the table
   extra_info      text,     -- comma-joined: Cover letter | Why us | Project/Technical | About me | Follow-up email | Other
 
   -- big text (side panel)

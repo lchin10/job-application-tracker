@@ -25,6 +25,7 @@ export interface Job {
     | "oa"
     | null;
   interviews: number;
+  pinned: boolean; // sticks the row to the top of the table
 
   // application materials prepared (multi-select stored as comma-joined text)
   extra_info: string | null;

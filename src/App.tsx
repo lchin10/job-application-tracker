@@ -123,6 +123,9 @@ function Tracker({ session }: { session: Session }) {
 
     const out = jobs.filter(matches);
     out.sort((a, b) => {
+      // Pinned rows stay on top, whatever the sort key/direction is.
+      if (a.pinned !== b.pinned) return a.pinned ? -1 : 1;
+
       let cmp: number;
       if (sortKey === "interviews") {
         cmp = a.interviews - b.interviews;

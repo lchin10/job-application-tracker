@@ -4,7 +4,7 @@ import type { Job } from "../types";
 /** All columns we read back from the table. */
 const COLUMNS =
   "id, user_id, company, role, date_applied, location, salary_min, salary_max, " +
-  "salary_currency, company_size, oa_status, status, interviews, extra_info, " +
+  "salary_currency, company_size, oa_status, status, interviews, pinned, extra_info, " +
   "job_url, job_description, notes, created_at, updated_at";
 
 /** Fetch the signed-in user's jobs, newest first. RLS scopes this to them. */

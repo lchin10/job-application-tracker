@@ -18,6 +18,8 @@ devices.
   interview count), and a slide-out detail panel that scrolls independently.
 - **Sorting & filtering** — sort by date applied or interviews; filter by location,
   company size, status, OA/HireVue, and prepared materials.
+- **Pinning** — pin the applications you care about to the top of the table, whatever
+  the active sort.
 - **Summary stats** — totals, rejections, OAs completed, jobs interviewed for, and
   total interviews.
 - **Color-coded** locations, statuses, and materials; multi-select locations and

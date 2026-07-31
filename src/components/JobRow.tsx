@@ -17,6 +17,10 @@ interface Props {
   active: boolean;
   onSelect: (job: Job) => void;
   onQuickUpdate: (id: string, patch: Partial<Job>) => void;
+  /** Registers the <tr> so JobsTable can measure it (pinned rows only). */
+  rowRef?: (id: string, el: HTMLTableRowElement | null) => void;
+  /** Offset below the sticky header, in px. Set for pinned rows once measured. */
+  stickyTop?: number;
 }
 
 const OA_OPTIONS: OaStatus[] = ["none", "pending", "submitted", "dropped"];
@@ -24,17 +28,53 @@ const OA_OPTIONS: OaStatus[] = ["none", "pending", "submitted", "dropped"];
 /** CSS custom property for chip color. */
 const cv = (c?: string): CSSProperties => (c ? ({ "--c": c } as CSSProperties) : {});
 
-export default function JobRow({ job, active, onSelect, onQuickUpdate }: Props) {
+export default function JobRow({
+  job,
+  active,
+  onSelect,
+  onQuickUpdate,
+  rowRef,
+  stickyTop,
+}: Props) {
   const salary = formatSalary(job);
 
   // Stop row-select from firing when interacting with inline controls.
   const stop = (e: React.MouseEvent) => e.stopPropagation();
 
+  // Pinned rows stick under the table header; the offset is measured by
+  // JobsTable and handed down, since row heights vary.
+  const sticky = job.pinned && stickyTop != null;
+
+  const rowClass = [
+    "job-row",
+    active ? "is-active" : "",
+    job.pinned ? "is-pinned" : "",
+    sticky ? "is-sticky" : "",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
     <tr
-      className={active ? "job-row is-active" : "job-row"}
+      className={rowClass}
+      ref={rowRef ? (el) => rowRef(job.id, el) : undefined}
+      style={sticky ? ({ "--sticky-top": `${stickyTop}px` } as CSSProperties) : undefined}
       onClick={() => onSelect(job)}
     >
+      <td className="pin-cell" onClick={stop}>
+        <button
+          type="button"
+          className={job.pinned ? "pin-btn is-pinned" : "pin-btn"}
+          aria-label={job.pinned ? "Unpin application" : "Pin application"}
+          aria-pressed={job.pinned}
+          title={job.pinned ? "Unpin" : "Pin to top"}
+          onClick={() => onQuickUpdate(job.id, { pinned: !job.pinned })}
+        >
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 9V4h1c.55 0 1-.45 1-1s-.45-1-1-1H7c-.55 0-1 .45-1 1s.45 1 1 1h1v5c0 1.66-1.34 3-3 3v2h5.97v7l1 1 1-1v-7H19v-2c-1.66 0-3-1.34-3-3z" />
+          </svg>
+        </button>
+      </td>
       <td>
         <span className="company-cell">
           {job.notes && (
