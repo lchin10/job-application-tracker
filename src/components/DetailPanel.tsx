@@ -16,6 +16,8 @@ import {
   type AppStatus,
 } from "../lib/constants";
 import MultiSelect from "./MultiSelect";
+import QAList from "./QAList";
+import { parseQA, formatQA } from "../lib/qa";
 
 const LOCATION_OPTIONS = LOCATIONS.map((v) => ({
   value: v,
@@ -56,15 +58,18 @@ export default function DetailPanel({ job, onClose, onSaved, onDeleted }: Props)
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editingNotes, setEditingNotes] = useState(false);
 
   // Re-sync the draft whenever a different job is opened.
   useEffect(() => {
     setDraft(job);
     setError(null);
+    setEditingNotes(false);
   }, [job]);
 
   // Keep the panel mounted (for the slide animation) even when nothing is open.
   const open = job != null && draft != null;
+  const qa = parseQA(draft?.notes ?? null);
 
   function set<K extends keyof Job>(key: K, value: Job[K]) {
     setDraft((d) => (d ? { ...d, [key]: value } : d));
@@ -94,6 +99,7 @@ export default function DetailPanel({ job, onClose, onSaved, onDeleted }: Props)
       };
       const updated = await updateJob(draft.id, patch);
       onSaved(updated);
+      setEditingNotes(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save.");
     } finally {
@@ -273,14 +279,39 @@ export default function DetailPanel({ job, onClose, onSaved, onDeleted }: Props)
             />
           </label>
 
-          <label className="field">
-            <span>Notes</span>
-            <textarea
-              rows={4}
-              value={draft.notes ?? ""}
-              onChange={(e) => set("notes", e.target.value)}
-            />
-          </label>
+          {qa.items.length > 0 && !editingNotes ? (
+            <div className="field">
+              <span>
+                Notes{" "}
+                <button className="link-btn" onClick={() => setEditingNotes(true)}>
+                  Edit
+                </button>
+              </span>
+              {qa.intro && <p className="qa-intro">{qa.intro}</p>}
+              <QAList
+                items={qa.items}
+                onTagsChange={(i, tags) =>
+                  set(
+                    "notes",
+                    formatQA(
+                      qa.intro,
+                      qa.items.map((it, j) => (j === i ? { ...it, tags } : it)),
+                    ),
+                  )
+                }
+              />
+            </div>
+          ) : (
+            <label className="field">
+              <span>Notes</span>
+              <textarea
+                rows={4}
+                value={draft.notes ?? ""}
+                onChange={(e) => set("notes", e.target.value)}
+                placeholder={"Q: Question from the form\nTags: Why us\nYour answer…"}
+              />
+            </label>
+          )}
 
           <div className="detail-actions">
             <button

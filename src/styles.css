@@ -503,6 +503,83 @@ select:focus {
 /* ---- Table toolbar ---- */
 .table-toolbar {
   margin-bottom: 14px;
+  display: flex;
+  gap: 10px;
+}
+
+.search-input {
+  max-width: 320px;
+}
+
+/* ---- Q&A (notes, bank) ---- */
+.qa-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.qa-item {
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 11px;
+}
+
+.qa-item summary {
+  cursor: pointer;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+}
+
+.qa-q {
+  font-weight: 500;
+}
+
+.qa-a,
+.qa-intro {
+  white-space: pre-wrap;
+  margin: 8px 0;
+}
+
+.more-details summary {
+  cursor: pointer;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+
+.more-details[open] {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.modal-wide {
+  max-width: 760px;
+}
+
+.bulk-preview {
+  overflow-x: auto;
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.shortcut-row > span {
+  flex: 1;
+}
+
+kbd {
+  font-family: var(--mono);
+  font-size: 12px;
+  background: var(--surface-2);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 2px 8px;
 }
 
 .table-toolbar-bottom {

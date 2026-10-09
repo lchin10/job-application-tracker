@@ -9,6 +9,10 @@ import JobsTable, { type SortKey } from "./components/JobsTable";
 import DetailPanel from "./components/DetailPanel";
 import AddJobModal from "./components/AddJobModal";
 import ScrollFab from "./components/ScrollFab";
+import QABankModal from "./components/QABankModal";
+import BulkAddModal from "./components/BulkAddModal";
+import ShortcutsModal from "./components/ShortcutsModal";
+import { comboFromEvent, loadBindings, saveBindings, type Action, type Bindings } from "./lib/shortcuts";
 import FilterBar, {
   type Filters,
   EMPTY_FILTERS,
@@ -56,7 +60,40 @@ function Tracker({ session }: { session: Session }) {
   const [filters, setFilters] = useState<Filters>(EMPTY_FILTERS);
   const [sortKey, setSortKey] = useState<SortKey>("date_applied");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [query, setQuery] = useState("");
+  const [qaOpen, setQaOpen] = useState(false);
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const [bindings, setBindings] = useState<Bindings>(loadBindings);
   const paneRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+
+  const changeBindings = useCallback((b: Bindings) => {
+    setBindings(b);
+    saveBindings(b);
+  }, []);
+
+  // Global shortcuts. Ignored while typing in a field or when a modal is open.
+  const modalOpen = addOpen || bulkOpen || qaOpen || shortcutsOpen;
+  useEffect(() => {
+    if (modalOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      const t = e.target as HTMLElement;
+      if (t.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(t.tagName)) return;
+      const combo = comboFromEvent(e);
+      const action = (Object.keys(bindings) as Action[]).find((a) => bindings[a] === combo);
+      if (!action) return;
+      e.preventDefault();
+      const pane = paneRef.current;
+      if (action === "add") setAddOpen(true);
+      if (action === "bulk") setBulkOpen(true);
+      if (action === "top") pane?.scrollTo({ top: 0, behavior: "smooth" });
+      if (action === "bottom") pane?.scrollTo({ top: pane.scrollHeight, behavior: "smooth" });
+      if (action === "search") searchRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [modalOpen, bindings]);
 
   const loadJobs = useCallback(async () => {
     setLoadingJobs(true);
@@ -88,7 +125,11 @@ function Tracker({ session }: { session: Session }) {
 
   // Filter then sort, client-side over the loaded rows.
   const visibleJobs = useMemo(() => {
+    const q = query.trim().toLowerCase();
     const matches = (job: Job) => {
+      if (q && !`${job.company}\n${job.role}\n${job.notes ?? ""}`.toLowerCase().includes(q)) {
+        return false;
+      }
       if (filters.location.length) {
         const locs = job.location ?? [];
         const ok = filters.location.some((f) =>
@@ -130,9 +171,10 @@ function Tracker({ session }: { session: Session }) {
       if (sortKey === "interviews") {
         cmp = a.interviews - b.interviews;
       } else {
-        // yyyy-mm-dd strings compare lexicographically; nulls sort last.
-        const av = a.date_applied ?? "9999-99-99";
-        const bv = b.date_applied ?? "9999-99-99";
+        // yyyy-mm-dd strings compare lexicographically; nulls sort last either way.
+        const none = sortDir === "asc" ? "9999-99-99" : "0000-00-00";
+        const av = a.date_applied ?? none;
+        const bv = b.date_applied ?? none;
         cmp = av < bv ? -1 : av > bv ? 1 : 0;
       }
       // Tiebreak by created_at ascending, so a newly added job (same date)
@@ -143,10 +185,11 @@ function Tracker({ session }: { session: Session }) {
       return sortDir === "asc" ? cmp : -cmp;
     });
     return out;
-  }, [jobs, filters, sortKey, sortDir]);
+  }, [jobs, filters, sortKey, sortDir, query]);
 
   const filtersActive =
-    filters.location.length +
+    query.trim().length +
+      filters.location.length +
       filters.company_size.length +
       filters.status.length +
       filters.oa_status.length +
@@ -187,6 +230,13 @@ function Tracker({ session }: { session: Session }) {
     setSortDir("asc");
   }
 
+  function handleBulkCreated(created: Job[]) {
+    setJobs((prev) => [...prev, ...created]);
+    setBulkOpen(false);
+    setSortKey("date_applied");
+    setSortDir("asc");
+  }
+
   // Inline quick-edit: update optimistically, persist, revert by reload on error.
   async function handleQuickUpdate(id: string, patch: Partial<Job>) {
     setJobs((prev) => prev.map((j) => (j.id === id ? { ...j, ...patch } : j)));
@@ -210,6 +260,12 @@ function Tracker({ session }: { session: Session }) {
           )}
         </div>
         <div className="header-right">
+          <button className="btn btn-ghost" onClick={() => setQaOpen(true)}>
+            Q&amp;A bank
+          </button>
+          <button className="btn btn-ghost" onClick={() => setShortcutsOpen(true)}>
+            Shortcuts
+          </button>
           <span className="muted user-email">{session.user.email}</span>
           <button
             className="btn btn-ghost"
@@ -265,6 +321,23 @@ function Tracker({ session }: { session: Session }) {
                 <button className="btn btn-primary" onClick={() => setAddOpen(true)}>
                   + Add application
                 </button>
+                <button className="btn" onClick={() => setBulkOpen(true)}>
+                  Bulk add
+                </button>
+                <input
+                  ref={searchRef}
+                  type="search"
+                  className="search-input"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Escape") {
+                      setQuery("");
+                      e.currentTarget.blur();
+                    }
+                  }}
+                  placeholder={`Search company, role, notes… (${bindings.search})`}
+                />
               </div>
 
               <FilterBar filters={filters} onChange={setFilters} />
@@ -274,7 +347,10 @@ function Tracker({ session }: { session: Session }) {
                   <p className="muted">No applications match these filters.</p>
                   <button
                     className="btn btn-ghost"
-                    onClick={() => setFilters(EMPTY_FILTERS)}
+                    onClick={() => {
+                      setFilters(EMPTY_FILTERS);
+                      setQuery("");
+                    }}
                   >
                     Clear filters
                   </button>
@@ -311,6 +387,19 @@ function Tracker({ session }: { session: Session }) {
         open={addOpen}
         onClose={() => setAddOpen(false)}
         onCreated={handleCreated}
+      />
+      <BulkAddModal
+        open={bulkOpen}
+        onClose={() => setBulkOpen(false)}
+        onCreated={handleBulkCreated}
+        jobs={jobs}
+      />
+      <QABankModal open={qaOpen} onClose={() => setQaOpen(false)} jobs={jobs} />
+      <ShortcutsModal
+        open={shortcutsOpen}
+        onClose={() => setShortcutsOpen(false)}
+        bindings={bindings}
+        onChange={changeBindings}
       />
       <ScrollFab targetRef={paneRef} panelOpen={!!activeJob} />
     </div>

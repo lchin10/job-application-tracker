@@ -130,3 +130,30 @@ export function splitExtraInfo(value: string | null): string[] {
 export function joinExtraInfo(values: string[]): string | null {
   return values.length ? values.join(", ") : null;
 }
+
+// Q&A tags, stored inline in notes as a "Tags: a, b" line under each "Q:" line.
+// Topic = which story/project the answer uses; type = what kind of question.
+export const QA_TOPICS = [
+  "VideoNest",
+  "Celeri",
+  "AI Music Coach",
+  "AI tooling/usage",
+  "Why us",
+  "About me/summary",
+] as const;
+
+export const QA_TYPES = ["Difficult problem", "Customer facing", "AI"] as const;
+
+export const QA_TAGS: readonly string[] = [...QA_TOPICS, ...QA_TYPES];
+
+export const QA_TAG_COLORS: Record<string, string> = {
+  VideoNest: "#c2906a", // dull orange
+  Celeri: "#7fa888", // dull green
+  "AI Music Coach": "#a98fc0", // dull purple
+  "AI tooling/usage": "#74aeae", // dull teal
+  "Why us": "#7e9bc0", // dull blue
+  "About me/summary": "#bfae74", // dull gold
+  "Difficult problem": "#c58a92", // dull rose
+  "Customer facing": "#98a1b0", // dull slate
+  AI: "#9a8f86", // dull taupe
+};

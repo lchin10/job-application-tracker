@@ -8,6 +8,9 @@ import {
   LOCATIONS,
   LOCATION_LABELS,
   LOCATION_COLORS,
+  EXTRA_INFO,
+  EXTRA_INFO_COLORS,
+  joinExtraInfo,
 } from "../lib/constants";
 import MultiSelect from "./MultiSelect";
 
@@ -15,6 +18,12 @@ const LOCATION_OPTIONS = LOCATIONS.map((v) => ({
   value: v,
   label: LOCATION_LABELS[v],
   color: LOCATION_COLORS[v],
+}));
+
+const EXTRA_INFO_OPTIONS = EXTRA_INFO.map((v) => ({
+  value: v,
+  label: v,
+  color: EXTRA_INFO_COLORS[v],
 }));
 
 interface Props {
@@ -32,6 +41,9 @@ const EMPTY = {
   company_size: "",
   job_url: "",
   job_description: "",
+  // "More details" section
+  date_applied: "",
+  notes: "",
 };
 
 /** Empty -> null for nullable text columns. */
@@ -51,6 +63,7 @@ type ParseMode = "link" | "text";
 export default function AddJobModal({ open, onClose, onCreated }: Props) {
   const [form, setForm] = useState(EMPTY);
   const [locations, setLocations] = useState<string[]>([]);
+  const [extraInfo, setExtraInfo] = useState<string[]>([]);
   const [mode, setMode] = useState<ParseMode>("link");
   const [pasteText, setPasteText] = useState("");
   const [parsing, setParsing] = useState(false);
@@ -61,8 +74,9 @@ export default function AddJobModal({ open, onClose, onCreated }: Props) {
   // Reset everything each time the modal opens.
   useEffect(() => {
     if (open) {
-      setForm(EMPTY);
+      setForm({ ...EMPTY, date_applied: todayISO() });
       setLocations([]);
+      setExtraInfo([]);
       setMode("link");
       setPasteText("");
       setError(null);
@@ -104,19 +118,25 @@ export default function AddJobModal({ open, onClose, onCreated }: Props) {
     setError(null);
     try {
       const p = await parseJob(mode === "link" ? { url } : { text });
-      if (p.location && p.location.length) setLocations(p.location);
+      // Parsed values only fill blanks; anything already typed wins.
+      const parsedLoc = p.location ?? [];
+      if (parsedLoc.length) setLocations((cur) => (cur.length ? cur : parsedLoc));
       // The model returns full annual figures; we store thousands.
-      const toK = (n: number) => (n >= 1000 ? Math.round(n / 1000) : n);
+      const toK = (n: number | null) =>
+        n == null ? null : String(n >= 1000 ? Math.round(n / 1000) : n);
+      const keep = (cur: string, next: string | null) => (cur.trim() ? cur : (next ?? ""));
       setForm((f) => ({
         ...f,
-        company: p.company ?? f.company,
-        role: p.role ?? f.role,
-        company_size: p.company_size ?? f.company_size,
-        salary_min: p.salary_min != null ? String(toK(p.salary_min)) : f.salary_min,
-        salary_max: p.salary_max != null ? String(toK(p.salary_max)) : f.salary_max,
-        salary_currency: p.salary_currency ?? f.salary_currency,
-        job_description:
-          p.job_description ?? (mode === "text" ? text : f.job_description),
+        company: keep(f.company, p.company),
+        role: keep(f.role, p.role),
+        company_size: keep(f.company_size, p.company_size),
+        salary_min: keep(f.salary_min, toK(p.salary_min)),
+        salary_max: keep(f.salary_max, toK(p.salary_max)),
+        salary_currency: keep(f.salary_currency, p.salary_currency),
+        job_description: keep(
+          f.job_description,
+          p.job_description ?? (mode === "text" ? text : null),
+        ),
       }));
       const jd = p.job_description?.length ?? 0;
       setParseMsg(
@@ -134,8 +154,13 @@ export default function AddJobModal({ open, onClose, onCreated }: Props) {
     }
   }
 
-  async function handleSubmit(e: FormEvent) {
+  // Enter in the form parses; only the Add button creates.
+  function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    if (!parsing && !busy) handleParse();
+  }
+
+  async function handleCreate() {
     setBusy(true);
     setError(null);
     try {
@@ -149,7 +174,9 @@ export default function AddJobModal({ open, onClose, onCreated }: Props) {
         company_size: nn(form.company_size),
         job_url: nn(form.job_url),
         job_description: nn(form.job_description),
-        date_applied: todayISO(),
+        date_applied: nn(form.date_applied) ?? todayISO(),
+        extra_info: joinExtraInfo(extraInfo),
+        notes: nn(form.notes),
       });
       onCreated(created);
     } catch (err) {
@@ -159,13 +186,8 @@ export default function AddJobModal({ open, onClose, onCreated }: Props) {
   }
 
   return (
-    <div className="modal-backdrop" onClick={onClose}>
-      <div
-        className="modal"
-        role="dialog"
-        aria-modal="true"
-        onClick={(e) => e.stopPropagation()}
-      >
+    <div className="modal-backdrop">
+      <div className="modal" role="dialog" aria-modal="true">
         <div className="modal-head">
           <h2>Add application</h2>
           <button className="btn btn-ghost" onClick={onClose} aria-label="Close">
@@ -298,13 +320,56 @@ export default function AddJobModal({ open, onClose, onCreated }: Props) {
             </label>
           </div>
 
+          <details className="more-details">
+            <summary>More details</summary>
+            <div className="field-grid">
+              <label className="field">
+                <span>Date applied</span>
+                <input
+                  type="date"
+                  value={form.date_applied}
+                  onChange={(e) => set("date_applied", e.target.value)}
+                />
+              </label>
+              <label className="field">
+                <span>Extra info (materials prepared)</span>
+                <MultiSelect
+                  options={EXTRA_INFO_OPTIONS}
+                  value={extraInfo}
+                  onChange={setExtraInfo}
+                />
+              </label>
+            </div>
+            <label className="field">
+              <span>Job description</span>
+              <textarea
+                rows={6}
+                value={form.job_description}
+                onChange={(e) => set("job_description", e.target.value)}
+              />
+            </label>
+            <label className="field">
+              <span>Notes</span>
+              <textarea
+                rows={4}
+                value={form.notes}
+                onChange={(e) => set("notes", e.target.value)}
+                placeholder={"Q: Question from the form\nTags: Why us\nYour answer…"}
+              />
+            </label>
+          </details>
+
           <p className="muted modal-hint">
-            Date applied is set to today. Every field — including the job
-            description — is editable in the panel after adding.
+            Enter parses. Every field is editable in the panel after adding.
           </p>
 
           <div className="modal-actions">
-            <button type="submit" className="btn btn-primary" disabled={busy || parsing}>
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={handleCreate}
+              disabled={busy || parsing}
+            >
               {busy ? "Adding…" : "Add"}
             </button>
             <button

@@ -36,3 +36,5 @@ supabase/.branches
 
 # my notion csv file
 from_notion.csv
+# Claude backfill output (personal notes)
+scripts/out/
