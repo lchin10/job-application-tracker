@@ -65,11 +65,14 @@ export default function DetailPanel({ job, onClose, onSaved, onDeleted }: Props)
     setDraft(job);
     setError(null);
     setEditingNotes(false);
+    setDeleting(false);
   }, [job]);
 
   // Keep the panel mounted (for the slide animation) even when nothing is open.
   const open = job != null && draft != null;
   const qa = parseQA(draft?.notes ?? null);
+  // Q&A view only once saved notes contain Q&As, so typing "Q:" doesn't switch mid-edit.
+  const savedHasQA = parseQA(job?.notes ?? null).items.length > 0;
 
   function set<K extends keyof Job>(key: K, value: Job[K]) {
     setDraft((d) => (d ? { ...d, [key]: value } : d));
@@ -279,7 +282,7 @@ export default function DetailPanel({ job, onClose, onSaved, onDeleted }: Props)
             />
           </label>
 
-          {qa.items.length > 0 && !editingNotes ? (
+          {savedHasQA && !editingNotes ? (
             <div className="field">
               <span>
                 Notes{" "}
