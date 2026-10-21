@@ -60,19 +60,18 @@ export default function DetailPanel({ job, onClose, onSaved, onDeleted }: Props)
   const [error, setError] = useState<string | null>(null);
   const [editingNotes, setEditingNotes] = useState(false);
 
-  // Re-sync the draft whenever a different job is opened.
+  // Re-sync the draft whenever a different job is opened or saved. Notes open
+  // in edit mode only when empty; otherwise they show the Q&A view until Edit.
   useEffect(() => {
     setDraft(job);
     setError(null);
-    setEditingNotes(false);
+    setEditingNotes(!job?.notes?.trim());
     setDeleting(false);
   }, [job]);
 
   // Keep the panel mounted (for the slide animation) even when nothing is open.
   const open = job != null && draft != null;
   const qa = parseQA(draft?.notes ?? null);
-  // Q&A view only once saved notes contain Q&As, so typing "Q:" doesn't switch mid-edit.
-  const savedHasQA = parseQA(job?.notes ?? null).items.length > 0;
 
   function set<K extends keyof Job>(key: K, value: Job[K]) {
     setDraft((d) => (d ? { ...d, [key]: value } : d));
@@ -102,7 +101,6 @@ export default function DetailPanel({ job, onClose, onSaved, onDeleted }: Props)
       };
       const updated = await updateJob(draft.id, patch);
       onSaved(updated);
-      setEditingNotes(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save.");
     } finally {
@@ -282,7 +280,7 @@ export default function DetailPanel({ job, onClose, onSaved, onDeleted }: Props)
             />
           </label>
 
-          {savedHasQA && !editingNotes ? (
+          {!editingNotes ? (
             <div className="field">
               <span>
                 Notes{" "}
