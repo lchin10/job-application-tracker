@@ -23,6 +23,8 @@ devices.
   location, company size), preview the parsed rows, and add them all at once.
   Applications you already track are skipped, and the table's row order is kept.
 - **Search** — filter the table by company, role, or notes.
+- **Applications calendar** — the 📅 button in the header opens a month view with
+  the number of applications sent each day.
 - **Sorting & filtering** — sort by date applied (oldest first, newest at the bottom,
   ties broken by time added) or interviews; filter by location, company size, status,
   OA/HireVue, and prepared materials.
@@ -52,6 +54,7 @@ dialog is open.
 |---|---|
 | Add application | `n` |
 | Bulk add applications | `m` |
+| Open calendar | `c` |
 | Go to top | `Ctrl + ↑` |
 | Go to bottom | `Ctrl + ↓` |
 | Focus search | `s` |

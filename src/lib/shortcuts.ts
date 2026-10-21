@@ -4,6 +4,7 @@
 export const ACTIONS = {
   add: "Add application",
   bulk: "Bulk add applications",
+  calendar: "Open calendar",
   top: "Go to top",
   bottom: "Go to bottom",
   search: "Focus search",
@@ -15,6 +16,7 @@ export type Bindings = Record<Action, string>;
 export const DEFAULT_BINDINGS: Bindings = {
   add: "n",
   bulk: "m",
+  calendar: "c",
   top: "ctrl+arrowup",
   bottom: "ctrl+arrowdown",
   search: "s",

@@ -11,6 +11,7 @@ import AddJobModal from "./components/AddJobModal";
 import ScrollFab from "./components/ScrollFab";
 import QABankModal from "./components/QABankModal";
 import BulkAddModal from "./components/BulkAddModal";
+import CalendarModal from "./components/CalendarModal";
 import ShortcutsModal from "./components/ShortcutsModal";
 import { comboFromEvent, loadBindings, saveBindings, type Action, type Bindings } from "./lib/shortcuts";
 import FilterBar, {
@@ -63,6 +64,7 @@ function Tracker({ session }: { session: Session }) {
   const [query, setQuery] = useState("");
   const [qaOpen, setQaOpen] = useState(false);
   const [bulkOpen, setBulkOpen] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [bindings, setBindings] = useState<Bindings>(loadBindings);
   const paneRef = useRef<HTMLDivElement>(null);
@@ -74,7 +76,7 @@ function Tracker({ session }: { session: Session }) {
   }, []);
 
   // Global shortcuts. Ignored while typing in a field or when a modal is open.
-  const modalOpen = addOpen || bulkOpen || qaOpen || shortcutsOpen;
+  const modalOpen = addOpen || bulkOpen || qaOpen || shortcutsOpen || calendarOpen;
   useEffect(() => {
     if (modalOpen) return;
     const onKey = (e: KeyboardEvent) => {
@@ -87,6 +89,7 @@ function Tracker({ session }: { session: Session }) {
       const pane = paneRef.current;
       if (action === "add") setAddOpen(true);
       if (action === "bulk") setBulkOpen(true);
+      if (action === "calendar") setCalendarOpen(true);
       if (action === "top") pane?.scrollTo({ top: 0, behavior: "smooth" });
       if (action === "bottom") pane?.scrollTo({ top: pane.scrollHeight, behavior: "smooth" });
       if (action === "search") searchRef.current?.focus();
@@ -260,6 +263,14 @@ function Tracker({ session }: { session: Session }) {
           )}
         </div>
         <div className="header-right">
+          <button
+            className="btn btn-ghost"
+            onClick={() => setCalendarOpen(true)}
+            aria-label="Applications calendar"
+            title="Applications calendar"
+          >
+            📅
+          </button>
           <button className="btn btn-ghost" onClick={() => setQaOpen(true)}>
             Q&amp;A bank
           </button>
@@ -394,6 +405,7 @@ function Tracker({ session }: { session: Session }) {
         onCreated={handleBulkCreated}
         jobs={jobs}
       />
+      <CalendarModal open={calendarOpen} onClose={() => setCalendarOpen(false)} jobs={jobs} />
       <QABankModal open={qaOpen} onClose={() => setQaOpen(false)} jobs={jobs} />
       <ShortcutsModal
         open={shortcutsOpen}
