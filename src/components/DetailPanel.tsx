@@ -59,13 +59,17 @@ export default function DetailPanel({ job, onClose, onSaved, onDeleted }: Props)
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editingNotes, setEditingNotes] = useState(false);
+  const [editingDesc, setEditingDesc] = useState(false);
+  const [descExpanded, setDescExpanded] = useState(false);
 
-  // Re-sync the draft whenever a different job is opened or saved. Notes open
-  // in edit mode only when empty; otherwise they show the Q&A view until Edit.
+  // Re-sync the draft whenever a different job is opened or saved. Notes and the
+  // job description open in edit mode only when empty; otherwise read-only until Edit.
   useEffect(() => {
     setDraft(job);
     setError(null);
     setEditingNotes(!job?.notes?.trim());
+    setEditingDesc(!job?.job_description?.trim());
+    setDescExpanded(false);
     setDeleting(false);
   }, [job]);
 
@@ -271,14 +275,32 @@ export default function DetailPanel({ job, onClose, onSaved, onDeleted }: Props)
             />
           </label>
 
-          <label className="field">
-            <span>Job description</span>
-            <textarea
-              rows={8}
-              value={draft.job_description ?? ""}
-              onChange={(e) => set("job_description", e.target.value)}
-            />
-          </label>
+          {!editingDesc ? (
+            <div className="field">
+              <span>
+                Job description{" "}
+                <button className="link-btn" onClick={() => setEditingDesc(true)}>
+                  Edit
+                </button>
+              </span>
+              <button
+                className={descExpanded ? "jd-preview is-expanded" : "jd-preview"}
+                onClick={() => setDescExpanded((x) => !x)}
+                title={descExpanded ? "Collapse" : "Show full description"}
+              >
+                {draft.job_description}
+              </button>
+            </div>
+          ) : (
+            <label className="field">
+              <span>Job description</span>
+              <textarea
+                rows={8}
+                value={draft.job_description ?? ""}
+                onChange={(e) => set("job_description", e.target.value)}
+              />
+            </label>
+          )}
 
           {!editingNotes ? (
             <div className="field">

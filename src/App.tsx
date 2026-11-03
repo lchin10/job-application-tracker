@@ -92,7 +92,7 @@ function Tracker({ session }: { session: Session }) {
       if (action === "calendar") setCalendarOpen(true);
       if (action === "top") pane?.scrollTo({ top: 0, behavior: "smooth" });
       if (action === "bottom") pane?.scrollTo({ top: pane.scrollHeight, behavior: "smooth" });
-      if (action === "search") searchRef.current?.focus();
+      if (action === "search") searchRef.current?.select();
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

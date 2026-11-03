@@ -543,6 +543,27 @@ select:focus {
   margin: 8px 0;
 }
 
+/* Read-only job description: clamped preview, click to show it all. */
+.jd-preview {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
+  white-space: pre-wrap;
+  text-align: left;
+  font: inherit;
+  color: var(--text);
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 8px 10px;
+  cursor: pointer;
+}
+
+.jd-preview.is-expanded {
+  display: block;
+}
+
 .more-details summary {
   cursor: pointer;
   color: var(--muted);

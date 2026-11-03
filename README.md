@@ -15,7 +15,8 @@ devices.
 - **AI link parsing** — paste a posting URL or text; a serverless function fetches
   it and uses Gemini to extract structured fields.
 - **Dense table** with a pinned header, inline quick-edits (status, OA/HireVue,
-  interview count), and a slide-out detail panel that scrolls independently.
+  interview count), and a slide-out detail panel that scrolls independently. The job
+  description shows as a short preview; click it to expand, or Edit to change it.
 - **Add with optional details** — the add modal parses on Enter, never overwrites a
   field you already typed, and has a collapsible "More details" section for date
   applied, prepared materials, job description, and notes.
@@ -57,7 +58,7 @@ dialog is open.
 | Open calendar | `c` |
 | Go to top | `Ctrl + ↑` |
 | Go to bottom | `Ctrl + ↓` |
-| Focus search | `s` |
+| Focus search (selects current text) | `s` |
 
 Dialogs close with **Esc** or the **✕** button; clicking outside a dialog does not
 close it.
